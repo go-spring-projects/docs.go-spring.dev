@@ -1,13 +1,13 @@
 import { DefaultTheme } from "vitepress";
 
 export const sidebar: DefaultTheme.Sidebar = {
-    //"/" : [
-    //    {
-    //        text: 'Examples',
-    //        items: [
-    //            { text: 'Markdown Examples', link: '/markdown-examples' },
-    //            { text: 'Runtime API Examples', link: '/api-examples' }
-    //        ]
-    //    }
-    //]
+    "/guide/" : [
+        {
+            text: 'Introduction',
+            items: [
+                { text: 'What is Go-Spring', link: '/guide/' },
+                { text: 'Getting Started', link: '/guide/getting-started' }
+            ]
+        }
+    ]
 }

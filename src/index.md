@@ -14,11 +14,11 @@ hero:
     alt: logo
   actions:
     - theme: brand
-      text: Quick start
-      link: /markdown-examples
+      text: Getting Started
+      link: /guide/getting-started
     - theme: alt
-      text: Introduce
-      link: /api-examples
+      text: Introduction
+      link: /guide/
 
 features:
   - icon: <span class="i-carbon:chart-network"></span> 
