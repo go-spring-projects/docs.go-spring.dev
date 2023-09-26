@@ -14,6 +14,8 @@ export default defineConfig({
     ["link", { rel: "icon", type: "image/x-icon", href: "/favicon.ico" }],
     ["link", { rel: "stylesheet", href: "/css/fancybox.css" }],
     ["script", { src: "/js/fancybox.umd.js" }],
+    ["script", { async: '', src: "https://www.googletagmanager.com/gtag/js?id=G-R7Y0434QHZ"}],
+    ["script", {}, "window.dataLayer = window.dataLayer || [];\nfunction gtag(){dataLayer.push(arguments);}\ngtag('js', new Date());\ngtag('config', 'G-R7Y0434QHZ');"]
   ],
   markdown: {
     theme: {
