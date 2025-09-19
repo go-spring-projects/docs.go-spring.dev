@@ -106,13 +106,13 @@ Property binding and bean injection annotations are marked using struct field ta
 
 Bind properties to a value, the bind value can be primitive type, map, slice, struct. When binding to struct, the tag 'value' indicates which properties should be bind. The 'value' tags are defined by value:"${a:=b}", 'a' is the property name, 'b' is the default value.
 
-![binding](binding.svg)
+![binding](/image/binding.svg)
 
 ##### Dependency Injection
 
 Dependency Injection is a design pattern used to implement decoupling between classes and the management of dependencies. It transfers the responsibility of creating and maintaining dependencies to an external container, so that the class does not need to instantiate dependent objects itself. Instead, the external container dynamically injects the dependencies.
 
-![autowire](autowire.svg)
+![autowire](/image/autowire.svg)
 
 ### Conditional registering
 
@@ -473,7 +473,7 @@ func main() {
 
 Initialization and deinitialization based on dependency order, everything will be executed as expected.
 
-![order](event.svg)
+![order](/image/event.svg)
 
 ### Project layout
 
