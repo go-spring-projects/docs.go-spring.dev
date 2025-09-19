@@ -1,7 +1,7 @@
 # Getting Started
 
 ## Install
-`go get github.com/go-spring-projects/go-spring@latest`
+`go get go-spring.dev/spring@latest`
 
 ## Hello world
 
@@ -9,25 +9,26 @@
 package main
 
 import (
+	"context"
 	"log/slog"
 
-	"github.com/go-spring-projects/go-spring/gs"
+	"go-spring.dev/spring/gs"
 )
 
 type MyApp struct {
 	Logger *slog.Logger `logger:""`
 }
 
-func (m *MyApp) OnInit(ctx gs.Context) error {
-	m.Logger.Info("HELLO WORLD")
+func (m *MyApp) OnInit(ctx context.Context) error {
+	m.Logger.Info("Hello world")
 	return nil
 }
 
 func main() {
-	// register object bean `MyApp`
+	// register object bean
 	gs.Object(new(MyApp))
 
-	// start go-spring boot app.
+	// run go-spring boot app
 	gs.Run()
 }
 

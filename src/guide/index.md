@@ -1,13 +1,17 @@
 # Go-Spring
 
-<img align="right" width="159px" src="/logo.svg"/>
-
 `Go-Spring` vision is to empower Go programmers with a powerful programming framework similar to Java `Spring`. It is dedicated to providing users with a simple, secure, and reliable programming experience.
 
-This project initial code based from [go-spring/go-spring](https://github.com/go-spring/go-spring) created by [lvan100](https://github.com/lvan100)
-
 ### Install
-`go get github.com/go-spring-projects/go-spring@latest`
+`go get go-spring.dev/spring@latest`
+
+### Features
+* **IoC Container**: Implements an inversion of control (IoC) container based on reflection, supporting the injection of structs, functions, and constants. This means you can use the `autowired` tag to automatically inject dependencies without having to manage them manually.
+* **Flexible Configuration Management**: Taking inspiration from Spring's @Value annotation, Go-Spring allows you to fetch configuration items from multiple sources (such as environment variables, files, command-line arguments, etc.). This brings unprecedented flexibility in configuration management.
+* **Validator Extension for Configuration**: Extends its robust configuration management capabilities with support for custom validator extensions. This enables you to perform validity checks on properties, ensuring only valid configurations are applied to your application.
+* **Logger Based on Standard slog**: Provides built-in logger support using the standard library slog for effective and streamlined logging. This enhancement offers clear, concise, and well-structured logging information that aids in system debugging and performance monitoring.
+* **Dynamic Property Refreshing**: Provides dynamic property refreshing which lets you update the application properties on-the-fly without needing to reboot your application. It caters to the needs of applications that require high availability and real-time responsiveness.
+* **Dependency Ordered Application Events**: Ensures the correct notification of initialization and destruction events according to the lifecycle of objects, following the order of bean dependencies. This enhances the robustness and reliability of the system during its lifecycle operations.
 
 ### IoC container
 
@@ -43,30 +47,31 @@ In addition to implementing a powerful IoC container similar to Java Spring, Go-
 package main
 
 import (
+	"context"
 	"log/slog"
 
-	"github.com/go-spring-projects/go-spring/gs"
+	"go-spring.dev/spring/gs"
 )
 
 type MyApp struct {
-    Logger *slog.Logger `logger:""`
+	Logger *slog.Logger `logger:""`
 }
 
-func (m *MyApp) OnInit(ctx gs.Context) error {
-    m.Logger.Info("Hello world")
-    return nil
+func (m *MyApp) OnInit(ctx context.Context) error {
+	m.Logger.Info("Hello world")
+	return nil
 }
 
 func main() {
-    // register object bean
-    gs.Object(new(MyApp))
-	
-    // run go-spring boot app
-    gs.Run()
+	// register object bean
+	gs.Object(new(MyApp))
+
+	// run go-spring boot app
+	gs.Run()
 }
 
 // Output:
-// time=2023-09-25T14:50:32.927+08:00 level=INFO source=main.go:14 msg="Hello world" logger=go-spring type=main.MyApp
+// time=2023-09-25T14:50:32.927+08:00 level=INFO source=main.go:14 msg="Hello world" logger=go-spring
 ```
 
 #### Bean register
@@ -74,9 +79,11 @@ func main() {
 ```go
 package mypkg
 
+import "go-spring.dev/spring/gs"
+
 type MyApp struct {}
 
-type NewApp() *MyApp {
+func NewApp() *MyApp {
 	return &MyApp{}
 }
 
@@ -99,13 +106,13 @@ Property binding and bean injection annotations are marked using struct field ta
 
 Bind properties to a value, the bind value can be primitive type, map, slice, struct. When binding to struct, the tag 'value' indicates which properties should be bind. The 'value' tags are defined by value:"${a:=b}", 'a' is the property name, 'b' is the default value.
 
-![binding](/image/binding.svg)
+![binding](binding.svg)
 
 ##### Dependency Injection
 
 Dependency Injection is a design pattern used to implement decoupling between classes and the management of dependencies. It transfers the responsibility of creating and maintaining dependencies to an external container, so that the class does not need to instantiate dependent objects itself. Instead, the external container dynamically injects the dependencies.
 
-![autowire](/image/autowire.svg)
+![autowire](autowire.svg)
 
 ### Conditional registering
 
@@ -179,11 +186,12 @@ In this example, we will use [go-validator/validator](https://github.com/go-vali
 package main
 
 import (
+	"context"
 	"fmt"
 	"log/slog"
 
-	"github.com/go-spring-projects/go-spring/conf"
-	"github.com/go-spring-projects/go-spring/gs"
+	"go-spring.dev/spring/conf"
+	"go-spring.dev/spring/gs"
 	"gopkg.in/validator.v2"
 )
 
@@ -219,7 +227,7 @@ type MysqlDatabase struct {
 	Options DBOptions    `value:"${db}"`
 }
 
-func (md *MysqlDatabase) OnInit(ctx gs.Context) error {
+func (md *MysqlDatabase) OnInit(ctx context.Context) error {
 	md.Logger.Info("mysql connection summary",
 		"url", fmt.Sprintf("mysql://%s:%s@%s:%d/%s", md.Options.UserName, md.Options.Password, md.Options.IP, md.Options.Port, md.Options.DB))
 	return nil
@@ -255,19 +263,20 @@ Allows dynamically refresh properties during runtime, not only supporting basic 
 package main
 
 import (
+	"context"
 	"fmt"
 	"log/slog"
 	"net/http"
 
-	"github.com/go-spring-projects/go-spring/dync"
-	"github.com/go-spring-projects/go-spring/gs"
+	"go-spring.dev/spring/dync"
+	"go-spring.dev/spring/gs"
 )
 
 type Handler struct {
 	Open dync.Bool `value:"${server.open:=true}"`
 }
 
-func (h *Handler) OnInit(ctx gs.Context) error {
+func (h *Handler) OnInit(ctx context.Context) error {
 
 	http.HandleFunc("/server/status", func(writer http.ResponseWriter, request *http.Request) {
 		if !h.Open.Value() {
@@ -284,9 +293,9 @@ type Server struct {
 	Logger *slog.Logger `logger:""`
 }
 
-func (s *Server) OnInit(ctx gs.Context) error {
+func (s *Server) OnInit(ctx context.Context) error {
 
-	props := ctx.(gs.Container).Properties()
+	props := gs.FromContext(ctx).(gs.Container).Properties()
 
 	http.HandleFunc("/server/status/open", func(writer http.ResponseWriter, request *http.Request) {
 		props.Set("server.open", "true")
@@ -315,7 +324,6 @@ func main() {
 	}
 }
 
-
 // Output:
 // 
 // $ curl http://127.0.0.1:7878/server/status
@@ -340,12 +348,13 @@ Automatically injects named logger, the logger library powered by the std [slog]
 package main
 
 import (
+	"context"
 	"io"
 	"log/slog"
 	"os"
 	"strings"
 
-	"github.com/go-spring-projects/go-spring/gs"
+	"go-spring.dev/spring/gs"
 )
 
 func init() {
@@ -356,27 +365,27 @@ func init() {
 		Primary bool   `value:"${primary:=false}"`
 	}
 
-    /*
-        logger:
-          # application logger.
-          app:
-            level: debug
-            file: /your/path/app.log
-            console: false
-            primary: true
-    
-          # system logger.
-          sys:
-            level: info
-            file: /your/path/sys.log
-            console: true
-    
-          # trace logger.
-          trace:
-            level: info
-            file: /your/path/trace.log
-            console: false
-    */
+	/*
+	   logger:
+	     # application logger.
+	     app:
+	       level: debug
+	       file: /your/path/app.log
+	       console: false
+	       primary: true
+
+	     # system logger.
+	     sys:
+	       level: info
+	       file: /your/path/sys.log
+	       console: true
+
+	     # trace logger.
+	     trace:
+	       level: info
+	       file: /your/path/trace.log
+	       console: false
+	*/
 
 	gs.OnProperty("logger", func(loggers map[string]Logger) {
 		for name, logger := range loggers {
@@ -425,7 +434,7 @@ type App struct {
 	TraceLogger *slog.Logger `logger:"${app.trace.logger:=trace}"`
 }
 
-func (app *App) OnInit(ctx gs.Context) error {
+func (app *App) OnInit(ctx context.Context) error {
 	app.Logger.Info("hello primary logger")
 	app.SysLogger.Info("hello system logger")
 	app.TraceLogger.Info("hello trace logger")
@@ -433,7 +442,7 @@ func (app *App) OnInit(ctx gs.Context) error {
 }
 
 func main() {
-	
+
 	gs.Property("logger.app.level", "debug")
 	gs.Property("logger.app.file", "./app.log")
 	gs.Property("logger.app.console", "true")
@@ -455,16 +464,16 @@ func main() {
 }
 
 // Output: 
-// {"time":"2023-10-27T12:10:14.8040121+08:00","level":"INFO","msg":"hello primary logger","logger":"app","type":"main.App"}
-// {"time":"2023-10-27T12:10:14.8040121+08:00","level":"INFO","msg":"hello system logger","logger":"sys","type":"main.App"}
-// {"time":"2023-10-27T12:10:14.8040121+08:00","level":"INFO","msg":"hello trace logger","logger":"trace","type":"main.App"}
+// {"time":"2023-10-27T12:10:14.8040121+08:00","level":"INFO","msg":"hello primary logger","logger":"app"}
+// {"time":"2023-10-27T12:10:14.8040121+08:00","level":"INFO","msg":"hello system logger","logger":"sys"}
+// {"time":"2023-10-27T12:10:14.8040121+08:00","level":"INFO","msg":"hello trace logger","logger":"trace"}
 ```
 
 ### Dependent order event
 
 Initialization and deinitialization based on dependency order, everything will be executed as expected.
 
-![order](/image/event.svg)
+![order](event.svg)
 
 ### Project layout
 
@@ -503,8 +512,8 @@ import (
 	"os"
 	"strings"
 
-	"github.com/go-spring-projects/go-spring/gs"
 	"github.com/urfave/cli/v2"
+	"go-spring.dev/spring/gs"
 )
 
 //import _ "testapp/pkg/infra"
